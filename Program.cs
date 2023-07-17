@@ -12,8 +12,17 @@ builder.Services.AddSwaggerGen(c => {
         Version = "v1"
     });
 });
+builder.Services.AddCors(options => {
+    options.AddPolicy("MyAllowedOrigins", policy => {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+
+app.UseCors("MyAllowedOrigins");
 
 if (app.Environment.IsDevelopment())
 {
@@ -28,7 +37,7 @@ app.MapGet("/getchirps", async (ChirpDb db) => await db.Chirps.ToListAsync());
 app.MapPost("/postchirp", async (ChirpDb db, ChirpData chirp) => {
     await db.Chirps.AddAsync(chirp);
     await db.SaveChangesAsync();
-    return Results.Created($"/chirp/{chirp.Uuid}", chirp);
+    return Results.Created($"/chirp/{chirp.Id}", chirp);
 });
 
 app.Run();

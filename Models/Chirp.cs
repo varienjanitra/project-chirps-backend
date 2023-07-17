@@ -4,7 +4,7 @@ namespace Chirp.Models
 {
     public class ChirpData
     {
-        public int Uuid { get; set; }
+        public int Id { get; set; }
         public string BodyText { get; set; } = "empty";
         public string PublishedTime { get; set; } = "no time";
     }
