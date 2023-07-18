@@ -40,4 +40,15 @@ app.MapPost("/postchirp", async (ChirpDb db, ChirpData chirp) => {
     return Results.Created($"/chirp/{chirp.Id}", chirp);
 });
 
+app.MapDelete("/deletechirp/{id}", async (ChirpDb db, int id) => {
+    if (await db.Chirps.FindAsync(id) is ChirpData chirp)
+    {
+        db.Chirps.Remove(chirp);
+        await db.SaveChangesAsync();
+        return Results.Ok(chirp);
+    }
+
+    return Results.NotFound();
+});
+
 app.Run();
