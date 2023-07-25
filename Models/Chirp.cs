@@ -6,7 +6,7 @@ namespace Chirp.Models
     {
         public int Id { get; set; }
         public string BodyText { get; set; } = "empty";
-        public string PublishedTime { get; set; } = "no time";
+        public DateTime PublishedTime { get; set; } = DateTime.MinValue;
     }
 
     class ChirpDb : DbContext
