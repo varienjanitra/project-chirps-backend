@@ -10,9 +10,9 @@ public static class ChirpEndpoints
     {
         // Retrieve all chirps data in the database
         app.MapGet("/getchirps", async (ChirpDb db) => {
-            List<ChirpData> Chirps= await db.Chirps.ToListAsync();
+            List<ChirpData> ChirpsList = await db.Chirps.ToListAsync();
 
-            return Results.Ok(Chirps);
+            return Results.Ok(ChirpsList);
         });
 
         // Store new chirp data inside database
