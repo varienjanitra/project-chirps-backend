@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using Chirp.Models;
+using Chirp.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
+// Configure a database context using in-memory database
 builder.Services.AddDbContext<ChirpDb>(options => options.UseInMemoryDatabase("items"));
+
+// Configures API explorer to discover and describe endpoints
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
         Title = "Project Chirps API",
@@ -12,9 +15,13 @@ builder.Services.AddSwaggerGen(c => {
         Version = "v1"
     });
 });
+
+// Configure CORS with new policy 'DefaultAppCorsPolicy'
 builder.Services.AddCors(options => {
-    options.AddPolicy("MyAllowedOrigins", policy => {
-        policy.WithOrigins("http://localhost:4200")
+    options.AddPolicy("DefaultAppCorsPolicy", policy => {
+        const string frontEndUrl = "http://localhost:4200";
+
+        policy.WithOrigins(frontEndUrl)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -22,8 +29,11 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
-app.UseCors("MyAllowedOrigins");
+/*  Add CORS middleware with default policy 'DefaultAppCorsPolicy' to allow app send/receive 
+    requests from different domains */
+app.UseCors("DefaultAppCorsPolicy");
 
+// Add Swagger middleware only if the app is in development mode 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -32,23 +42,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapGet("/getchirps", async (ChirpDb db) => await db.Chirps.ToListAsync());
-
-app.MapPost("/postchirp", async (ChirpDb db, ChirpData chirp) => {
-    await db.Chirps.AddAsync(chirp);
-    await db.SaveChangesAsync();
-    return Results.Created($"/chirp/{chirp.Id}", chirp);
-});
-
-app.MapDelete("/deletechirp/{id}", async (ChirpDb db, int id) => {
-    if (await db.Chirps.FindAsync(id) is ChirpData chirp)
-    {
-        db.Chirps.Remove(chirp);
-        await db.SaveChangesAsync();
-        return Results.Ok(chirp);
-    }
-
-    return Results.NotFound();
-});
+// All endpoint routing activities shall be organized in the /Controllers folder
+Chirp.Controller.ChirpEndpoints.Map(app);
 
 app.Run();
